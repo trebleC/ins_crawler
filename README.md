@@ -1,58 +1,90 @@
-# Instagram
-爬取Instagram上某一账户的全部post，包括正文，点赞数，评论数，发帖时间，帖子链接，并且下载相应的图片或视频
+<div align="center">
+  <img src="./logo.gif" height="200">
+  <h2>ins-cralwler - Instagram爬虫  </h2>
+</div>
 
-## need set
-需要填写user的名字
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE.txt)
+[![python version](https://img.shields.io/badge/python-3.6-green?style=flat-square)]()
 
-利用getCookie.py获取cookie备用
+[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/its-not-a-lie-if-you-believe-it.svg)](https://forthebadge.com)
+<br><br>
 
-在instagram的用户主页按下F12，获取对应的query_hash以及cookie中的sessionid
-
-此爬虫还将数据信息存储进入mongodb中，可以选择
-
-## 爬虫结构
-
-爬虫程序大致运行顺序及意义：
-
->get_html()：获取到首页源码
-
->get_urls()：获取到动态加载的ajax页面信息
-
->get_json()：获取到动态加载的帖子的json数据
-
->get_data()：解析获取到的json数据
-
->save()：保存相应的帖子信息，下载相应的图片及视频
-
->save_mongo()：存入mongodb中
+# 爬取全部帖子
 
 
-## 截图功能
+- [x]  正文
+- [x] 点赞数
+- [x] 评论数
+- [x] 发帖时间
+- [x] 帖子链接
+- [x] 正文图片
+- [x] 缩略图
+- [ ] 评论
+- [ ] 视频
+- [ ] 正在关注
+
+<br><br>
+
+# 准备食用餐具
+克隆
+```sh
+git clone https://github.com/trebleC/ins_crawler.git
+```
+
+安装依赖
+```sh
+pip install -r requirements.txt
+```
+<br><br>
+
+# 食用方法
++ 修改用户昵称
++ 在instagram的用户主页按下F12，获取对应的query_hash以及cookie
+```python
+user_name = 'everyone.is.storyteller'
+
+query_hash=' '
+
+headers   = { 
+                "cookie": " "
+            }
+```
++ 数据库连接默认，如需修改save_mongo(dict)中的值
+```python
+def save_mongo(dict):
+    conn = MongoClient('localhost', 27017) #地址,端口号
+    db = conn.spider    #数据库
+    my_set = db.ins   #集合
+```
+
+<br><br>
+
+# 字典
+```python
+edge = js_data["entry_data"]["ProfilePage"][0]["graphql"]["user"]["edge_owner_to_timeline_media"]["edges"]
+
+edge["node"]["taken_at_timestamp"] #时间戳
+edge["node"]["display_url"] #图片地址
+edge["node"]["edge_media_to_caption"]["edges"][0]["node"]["text"] #正文内容
+edge["node"]["shortcode"] #shortcode
+edge["node"]["edge_media_to_comment"]["count"] #评论数
+edge["node"]["edge_media_preview_like"]["count"] #点赞数
+edge["node"]["thumbnail_resources"][-1]["src"] #缩略图地址
+```
+
+[数据结构](./debug_content.json) | [debug_content.json](./debug_content.json)
+
+<br><br>
+
+# 截图功能
 
 获取已经存入mongodb中的每个帖子的url，screenshot.py实现了对每篇帖子截图的功能。
 
-截图功能的运行顺序：
+- [ ] 截图功能
 
-1、master.py：从数据库中加载url至redis队列中备用
-
-2、screenshot.py：截图程序
-
->get_url()：
-  
->>从redis队列中获取到待爬取的帖子url；
-    
->>根据url从mongodb中获取帖子信息；
-    
->>根据帖子信息中的时间戳，创建相应的文件路径；
-    
->>加载webdriver用于帖子爬取
-
->get_picture()：
-
->>利用selenium+phantomjs打开帖子的url；
-
->>利用webdriver的截图功能实现截图
-
+<br>
 
 # 数据存储结构
 
@@ -61,11 +93,42 @@
 key | 意义
 -------- | --------
 _id	| 帖子的时间戳
-taken_at_timestamp	| 帖子的时间戳
-url	| 帖子的地址(https://www.instagram.com/p/{shortcode}/?taken-by={user})
+timestamp	| 帖子的时间戳
 shortcode | 帖子的标识符，对于每个用户的所有帖子来说是唯一的
-typename | 帖子类型
-comment_count | 评论数
-like_count | 点赞数
-text | 帖子内容
-media_url | 列表。包含该帖子中的所有图片及视频的url
+imgs_url | 图片地址
+content | 帖子正文
+counts_comment | 评论数
+counts_like | 点赞数
+thumbnail_url | 缩略图地址
+<br><br>
+
+对于只用过Mysql同学，下面是MongoDB安装
+
+
+
+
+
+## Windows
+```sh
+下载
+https://www.mongodb.com/download-center#community
+
+按步骤安装后启动 
+
+命令行
+C:\Users\as> mongod
+```
+## Linux
+```sh
+curl -O https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.0.6.tgz    # 下载
+tar -zxvf mongodb-linux-x86_64-3.0.6.tgz                                   # 解压
+
+mv  mongodb-linux-x86_64-3.0.6/ /usr/local/mongodb                         # 将解压包拷贝到指定目录
+```
+## 参考
+
+[菜鸟教程](https://www.runoob.com/mongodb/mongodb-window-install.html) | [https://www.runoob.com/mongodb/mongodb-window-install.html](https://www.runoob.com/mongodb/mongodb-window-install.html)
+
+# License
+
+The code is available under the [MIT License](LICENSE.txt).
