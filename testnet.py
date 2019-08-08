@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-from lxml import etree
-import json
 import requests
-import time
-from pymongo import MongoClient
 
 BASE_URL= "https://www.google.com"
 headers = {
